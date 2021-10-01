@@ -1,0 +1,136 @@
+<deployment-project plugin="plugin.toolbox" plugin-version="1.0">
+  <configuration file="D:\Projects\hind-lab\build\Cell Migration Toolbox.prj" location="D:\Projects\hind-lab\build" name="Cell Migration Toolbox" target="target.toolbox" target-name="Package Toolbox">
+    <param.appname>Cell Migration Toolbox</param.appname>
+    <param.authnamewatermark>Jian Wei Tay</param.authnamewatermark>
+    <param.email>jian.tay@colorado.edu</param.email>
+    <param.company>University of Colorado Boulder</param.company>
+    <param.summary>Toolbox to track cell migration in artificial vessel devices</param.summary>
+    <param.description />
+    <param.screenshot />
+    <param.version>0.0.1</param.version>
+    <param.output>${PROJECT_ROOT}\Cell Migration Toolbox.mltbx</param.output>
+    <param.products.name />
+    <param.products.id />
+    <param.products.version />
+    <param.platforms />
+    <param.guid>8091e353-7a3e-44ec-bc9d-ddbc57d06d7f</param.guid>
+    <param.exclude.filters />
+    <param.exclude.pcodedmfiles>true</param.exclude.pcodedmfiles>
+    <param.examples />
+    <param.demosxml />
+    <param.apps />
+    <param.registered.apps />
+    <param.docs />
+    <param.getting.started.guide />
+    <param.matlabpath.excludes>
+      <item>/D__/Projects/Common/imp-toolbox</item>
+    </param.matlabpath.excludes>
+    <param.javaclasspath.excludes />
+    <param.exported.on.package>false</param.exported.on.package>
+    <param.required.addons>
+      <requiredaddons>
+        <requiredAddOn downloadURL="https://github.com/Biofrontiers-ALMC/bioformats-matlab/releases/download/v1.2.0/Bioformats_Image_Toolbox__v1.2.0_.mltbx" earliest="earliest" fromRepository="false" id="f27de8de-7bd2-4c9e-8c48-10d517608753" include="true" latest="latest">Bioformats Image Toolbox (v1.2.0)</requiredAddOn>
+        <requiredAddOn downloadURL="https://github.com/Biofrontiers-ALMC/cell-tracking-toolbox/releases/download/v2.0.1/Linear.Assignment.Cell.Tracker.v2.0.1.mltbx" earliest="earliest" fromRepository="false" id="a43b370f-88b2-458c-9075-c4a0d7300347" include="true" latest="latest">Linear Assignment Cell Tracker v2.0.1</requiredAddOn>
+      </requiredaddons>
+    </param.required.addons>
+    <param.matlab.project.id />
+    <param.matlab.project.name />
+    <param.release.start />
+    <param.release.end />
+    <param.release.current.only>false</param.release.current.only>
+    <param.compatiblity.windows>true</param.compatiblity.windows>
+    <param.compatiblity.macos>true</param.compatiblity.macos>
+    <param.compatiblity.linux>true</param.compatiblity.linux>
+    <param.compatiblity.matlabonline>true</param.compatiblity.matlabonline>
+    <param.installation.map />
+    <param.additional.sw.names />
+    <param.additional.sw.licenses />
+    <param.additional.sw.win.url />
+    <param.additional.sw.mac.url />
+    <param.additional.sw.linux.url />
+    <unset>
+      <param.authnamewatermark />
+      <param.email />
+      <param.company />
+      <param.description />
+      <param.screenshot />
+      <param.output />
+      <param.products.name />
+      <param.products.id />
+      <param.products.version />
+      <param.platforms />
+      <param.exclude.filters />
+      <param.exclude.pcodedmfiles />
+      <param.examples />
+      <param.demosxml />
+      <param.apps />
+      <param.registered.apps />
+      <param.docs />
+      <param.getting.started.guide />
+      <param.javaclasspath.excludes />
+      <param.exported.on.package />
+      <param.matlab.project.id />
+      <param.matlab.project.name />
+      <param.release.start />
+      <param.release.end />
+      <param.release.current.only />
+      <param.compatiblity.windows />
+      <param.compatiblity.macos />
+      <param.compatiblity.linux />
+      <param.compatiblity.matlabonline />
+      <param.installation.map />
+      <param.additional.sw.names />
+      <param.additional.sw.licenses />
+      <param.additional.sw.win.url />
+      <param.additional.sw.mac.url />
+      <param.additional.sw.linux.url />
+    </unset>
+    <fileset.rootdir>
+      <file>D:\Projects\hind-lab\tbx\cell-migration-toolbox</file>
+    </fileset.rootdir>
+    <fileset.rootfiles>
+      <file>D:\Projects\hind-lab\tbx\cell-migration-toolbox\CMTrack.m</file>
+    </fileset.rootfiles>
+    <fileset.depfun.included>
+      <file>D:\Projects\Common\imp-toolbox\showoverlay.m</file>
+    </fileset.depfun.included>
+    <fileset.depfun.excluded />
+    <fileset.package />
+    <build-deliverables>
+      <file location="${PROJECT_ROOT}" name="Cell Migration Toolbox.mltbx" optional="false">D:\Projects\hind-lab\build\Cell Migration Toolbox.mltbx</file>
+    </build-deliverables>
+    <workflow />
+    <matlab>
+      <root>C:\Program Files\MATLAB\R2021a</root>
+      <toolboxes>
+        <toolbox name="matlabcoder" />
+        <toolbox name="neuralnetwork" />
+      </toolboxes>
+      <toolbox>
+        <matlabcoder>
+          <enabled>true</enabled>
+        </matlabcoder>
+      </toolbox>
+      <toolbox>
+        <neuralnetwork>
+          <enabled>true</enabled>
+        </neuralnetwork>
+      </toolbox>
+    </matlab>
+    <platform>
+      <unix>false</unix>
+      <mac>false</mac>
+      <windows>true</windows>
+      <win2k>false</win2k>
+      <winxp>false</winxp>
+      <vista>false</vista>
+      <linux>false</linux>
+      <solaris>false</solaris>
+      <osver>10.0</osver>
+      <os32>false</os32>
+      <os64>true</os64>
+      <arch>win64</arch>
+      <matlab>true</matlab>
+    </platform>
+  </configuration>
+</deployment-project>
