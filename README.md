@@ -23,18 +23,22 @@ Finally, run the method ``process``:
 process(CM, 'data\lumen_huvec_PAK_072121_03.nd2', 'outputDir');
 ```
 
+### Required toolboxes
+The .mltbx file should download the required toolboxes listed below. If not, download and install the latest releases of the following:
+* [BioFormats MATLAB](https://github.com/Biofrontiers-ALMC/bioformats-matlab/releases)
+* [Cell Tracking Toolbox](https://github.com/Biofrontiers-ALMC/cell-tracking-toolbox/releases/tag/v2.0.1)
+
 ## Contribute
 
 ### Bug reports and feature requests
 
-Please use the [Issue Tracker](https://biof-git.colorado.edu/cameron-lab/cyanobacteria-toolbox/issues) to file a bug report or to request new features.
+Please use the [Issue Tracker](https://github.com/Biofrontiers-ALMC/cell-migration-analysis/issues) to file a bug report or to request new features.
 
 ### Development 
 
 - The source code can be cloned from the repository
 ```git
-git clone git@biof-git.colorado.edu:cameron-lab/cyanobacteria-toolbox.git
+git clone git@github.com:Biofrontiers-ALMC/cell-migration-analysis.git
 ```
-- Read the [Contributer Guide](https://biof-git.colorado.edu/cameron-lab/cyanobacteria-toolbox/wikis/home)
-- The directory of the Git repository is arranged according to the best practices described in [this MathWorks blog post](https://blogs.mathworks.com/developer/2017/01/13/matlab-toolbox-best-practices/).
+
 
