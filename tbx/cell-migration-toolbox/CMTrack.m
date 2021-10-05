@@ -10,6 +10,7 @@ classdef CMTrack < handle
         ExportVideo = true;
         ThresholdLvl = 1800;
         LinkRange = [0 15];
+        SeriesRange = 1;
         
     end
     
@@ -53,29 +54,34 @@ classdef CMTrack < handle
                 
                 reader = BioformatsImage(files{iF});
                 
-                %Compute the maximum intensity projection
-                MIP = zeros(reader.height, reader.width, ...
-                    reader.sizeZ, 'uint16');
-                
-                for iZ = 1:reader.sizeZ
+                for iS = obj.SeriesRange
                     
-                    MIP(:, :, iZ) = getPlane(reader, iZ, ct(1), ct(2));
+                    reader.series = iS;
                     
+                    %Compute the maximum intensity projection
+                    MIP = zeros(reader.height, reader.width, ...
+                        reader.sizeZ, 'uint16');
+                    
+                    for iZ = 1:reader.sizeZ
+                        
+                        MIP(:, :, iZ) = getPlane(reader, iZ, ct(1), ct(2));
+                        
+                    end
+                    MIP = max(MIP, [], 3);
+                    
+                    imshow(MIP, [])
+                    roi = drawrectangle;
+                    pause
+                    
+                    maskExclude = createMask(roi);
+                    
+                    %Generate output file
+                    [fpath, fname] = fileparts(reader.filename);
+                    
+                    imwrite(maskExclude, fullfile(fpath, [fname, '_', num2str(iS), '_exm.tif']), ...
+                        'Compression', 'none');
                 end
-                MIP = max(MIP, [], 3);
                 
-                imshow(MIP, [])
-                roi = drawrectangle;
-                pause
-                
-                maskExclude = createMask(roi);
-                
-                %Generate output file
-                [fpath, fname] = fileparts(reader.filename);
-                
-                imwrite(maskExclude, fullfile(fpath, [fname, '_exm.tif']), ...
-                    'Compression', 'none');                
-
             end
             
             
@@ -89,6 +95,7 @@ classdef CMTrack < handle
             opts.thresholdLvl = obj.ThresholdLvl;
             opts.linkScoreRange = obj.LinkRange;
             opts.exportVideo = obj.ExportVideo;
+            opts.SeriesRange = obj.SeriesRange;
             
             %Create output directory if it doesn't exist
             if ~exist(outputDir, 'dir')
@@ -101,11 +108,7 @@ classdef CMTrack < handle
             
             for iF = 1:numel(files)
                 
-                %Check if the exclusion mask exists
-                [fPath, fName] = fileparts(files{iF});
-                if exist(fullfile(fPath, [fName, '_exm.tif']), 'file')
-                    opts.maskExclude = fullfile(fPath, [fName, '_exm.tif']);
-                end
+                [~, fName] = fileparts(files{iF});
                 
                 fprintf([datestr(now, 'dd-mmm-yy HH:MM'), ': ', ...
                     fName, ' Processing started...\n'])
@@ -139,128 +142,142 @@ classdef CMTrack < handle
             
             reader = BioformatsImage(filename);
             
-            %Create the tracking object
-            LAP = LAPLinker;
-            LAP.LinkScoreRange = [0 15];
-            
-            [~, fName] = fileparts(reader.filename);
-            
-            %Create video file if selected
-            if opts.exportVideo
-                vidXY = VideoWriter(fullfile(outputDir, [fName, '_XY.avi']));
-                vidXY.FrameRate = 5;
-                open(vidXY)
+            for iS = opts.SeriesRange
                 
-                vidXZ = VideoWriter(fullfile(outputDir, [fName, '_XZ.avi']));
-                vidXZ.FrameRate = 5;
-                open(vidXZ)                
-            end
-            
-            nObjExROI = zeros(1, reader.sizeT);
-            
-            for iT = 1:reader.sizeT              
+                reader.series = iS;
                 
-                %Create matrices to store image and mask
-                storeI = zeros(reader.height, reader.width, reader.sizeZ);
-                storeMask = false(reader.height, reader.width, reader.sizeZ);
-                
-                storeMaskEx = false(reader.height, reader.width, reader.sizeZ);
-                
-                %Read in the exclusion mask if it exists
-                if ~isempty(opts.maskExclude)
-                    maskExclude = imread(opts.maskExclude);
+                %Check if an exclusion mask exists
+                [fPath, fName] = fileparts(filename);
+                if exist(fullfile(fPath, [fName, '_', num2str(iS), '_exm.tif']), 'file')
+                    opts.maskExclude = fullfile(fPath, [fName, '_', num2str(iS), '_exm.tif']);
                 else
-                    maskExclude = false(reader.height, reader.width);
+                    opts.maskExclude = '';
                 end
                 
-                for iZ = 1:reader.sizeZ
+                %Create the tracking object
+                LAP = LAPLinker;
+                LAP.LinkScoreRange = opts.linkScoreRange;
+                
+                %[~, fName] = fileparts(reader.filename);
+                
+                %Create video file if selected
+                if opts.exportVideo
+                    vidXY = VideoWriter(fullfile(outputDir, [fName, '_', num2str(iS), '_XY.avi']));
+                    vidXY.FrameRate = 5;
+                    open(vidXY)
                     
-                    %Read in z-stack images
-                    storeI(:, :, iZ) = getPlane(reader, iZ, opts.channelToTrack, iT);
-                    
-                    %Create a mask of the bright objects
-                    currMask = storeI(:, :, iZ) > opts.thresholdLvl;
-                    storeMask(:, :, iZ) = currMask & ~maskExclude;
-                    storeMaskEx(:, :, iZ) = currMask & maskExclude;
-                    
+                    vidXZ = VideoWriter(fullfile(outputDir, [fName, '_', num2str(iS), '_XZ.avi']));
+                    vidXZ.FrameRate = 5;
+                    open(vidXZ)
                 end
                 
-                %Compute the centroid positions
-                data = regionprops(storeMask, 'Centroid');
+                nObjExROI = zeros(1, reader.sizeT);
                 
-                %Track data
-                LAP = assignToTrack(LAP, iT, data);
-                
-                %Compute number of objects in exluded region
-                dataEx = regionprops(storeMask, 'Centroid');
-                nObjExROI(iT) = numel(dataEx);
+                for iT = 1:reader.sizeT
+                    
+                    %Create matrices to store image and mask
+                    storeI = zeros(reader.height, reader.width, reader.sizeZ);
+                    storeMask = false(reader.height, reader.width, reader.sizeZ);
+                    
+                    storeMaskEx = false(reader.height, reader.width, reader.sizeZ);
+                    
+                    %Read in the exclusion mask if it exists
+                    if ~isempty(opts.maskExclude)
+                        maskExclude = imread(opts.maskExclude);
+                    else
+                        maskExclude = false(reader.height, reader.width);
+                    end
+                    
+                    for iZ = 1:reader.sizeZ
+                        
+                        %Read in z-stack images
+                        storeI(:, :, iZ) = getPlane(reader, iZ, opts.channelToTrack, iT);
+                        
+                        %Create a mask of the bright objects
+                        currMask = storeI(:, :, iZ) > opts.thresholdLvl;
+                        storeMask(:, :, iZ) = currMask & ~maskExclude;
+                        storeMaskEx(:, :, iZ) = currMask & maskExclude;
+                        
+                    end
+                    
+                    %Compute the centroid positions
+                    data = regionprops(storeMask, 'Centroid');
+                    
+                    %Track data
+                    LAP = assignToTrack(LAP, iT, data);
+                    
+                    %Compute number of objects in exluded region
+                    dataEx = regionprops(storeMask, 'Centroid');
+                    nObjExROI(iT) = numel(dataEx);
+                    
+                    if opts.exportVideo
+                        
+                        %Make a video
+                        MIPxy = max(storeI, [], 3);
+                        
+                        IoutXY = double(MIPxy);
+                        IoutXY = IoutXY ./ max(IoutXY(:));
+                        
+                        IoutXY = showoverlay(IoutXY, max(storeMask, [], 3), 'Opacity', 40);
+                        
+                        MIPxz = max(storeI, [], 1);
+                        MIPxz = squeeze(MIPxz);
+                        maskxz = max(storeMask, [], 1);
+                        maskxz = squeeze(maskxz);
+                        
+                        IoutXZ = double(MIPxz);
+                        IoutXZ = IoutXZ ./ max(IoutXZ(:));
+                        IoutXZ = showoverlay(IoutXZ, maskxz, 'Opacity', 40);
+                        
+                        for iTA = 1:numel(LAP.activeTrackIDs)
+                            
+                            ct = getTrack(LAP, LAP.activeTrackIDs(iTA));
+                            
+                            %Generate a random color based on the trackID
+                            rng(LAP.activeTrackIDs(iTA))
+                            color = rand(1, 3);
+                            
+                            if size(ct.Centroid, 1) > 1
+                                IoutXY = insertShape(IoutXY, 'line', reshape(ct.Centroid(:, 1:2)', 1, []), ...
+                                    'Color', color);
+                                
+                                IoutXZ = insertShape(IoutXZ, 'line', reshape(ct.Centroid(:, [1 3])', 1, []), ...
+                                    'Color', color);
+                            end
+                        end
+                        
+                        IoutXY = imresize(IoutXY, 3);
+                        IoutXY(IoutXY < 0) = 0;
+                        IoutXY(IoutXY > 1) = 1;
+                        
+                        writeVideo(vidXY, IoutXY);
+                        
+                        IoutXZ = imresize(IoutXZ, 3);
+                        IoutXZ(IoutXZ < 0) = 0;
+                        IoutXZ(IoutXZ > 1) = 1;
+                        
+                        try
+                            writeVideo(vidXZ, IoutXZ);
+                        catch
+                            keyboard
+                        end
+                        
+                    end
+                    
+                end
                 
                 if opts.exportVideo
-                    
-                    %Make a video
-                    MIPxy = max(storeI, [], 3);
-                    
-                    IoutXY = double(MIPxy);
-                    IoutXY = IoutXY ./ max(IoutXY(:));
-                    
-                    IoutXY = showoverlay(IoutXY, max(storeMask, [], 3), 'Opacity', 40);
-                    
-                    MIPxz = max(storeI, [], 1);
-                    MIPxz = squeeze(MIPxz);
-                    maskxz = max(storeMask, [], 1);                    
-                    maskxz = squeeze(maskxz);
-                    
-                    IoutXZ = double(MIPxz);
-                    IoutXZ = IoutXZ ./ max(IoutXZ(:));
-                    IoutXZ = showoverlay(IoutXZ, maskxz, 'Opacity', 40);
-                    
-                    for iTA = 1:numel(LAP.activeTrackIDs)
-                        
-                        ct = getTrack(LAP, LAP.activeTrackIDs(iTA));
-                        
-                        %Generate a random color based on the trackID
-                        rng(LAP.activeTrackIDs(iTA))
-                        color = rand(1, 3);
-                        
-                        if size(ct.Centroid, 1) > 1
-                            IoutXY = insertShape(IoutXY, 'line', reshape(ct.Centroid(:, 1:2)', 1, []), ...
-                                'Color', color);
-                            
-                            IoutXZ = insertShape(IoutXZ, 'line', reshape(ct.Centroid(:, [1 3])', 1, []), ...
-                                'Color', color);                            
-                        end
-                    end
-                    
-                    IoutXY = imresize(IoutXY, 3);
-                    IoutXY(IoutXY < 0) = 0;
-                    IoutXY(IoutXY > 1) = 1;
-                    
-                    writeVideo(vidXY, IoutXY);
-                    
-                    IoutXZ = imresize(IoutXZ, 3);
-                    IoutXZ(IoutXZ < 0) = 0;
-                    IoutXZ(IoutXZ > 1) = 1;
-                    
-                    try
-                        writeVideo(vidXZ, IoutXZ);
-                    catch
-                        keyboard
-                    end
-                    
+                    close(vidXY);
+                    close(vidXZ);
                 end
                 
+                trackData = LAP.tracks;
+                
+                %Save tracked data
+                save(fullfile(outputDir, [fName, '_', num2str(iS), '.mat']), ...
+                    'trackData', 'nObjExROI');
+                
             end
-            
-            if opts.exportVideo
-                close(vidXY);
-                close(vidXZ);
-            end
-            
-            trackData = LAP.tracks;
-            
-            %Save tracked data
-            save(fullfile(outputDir, [fName, '.mat']), ...
-                'trackData', 'nObjExROI');
         end
         
     end
