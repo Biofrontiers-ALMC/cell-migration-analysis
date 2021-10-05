@@ -2,20 +2,20 @@ clearvars
 clc
 
 %load('lumen_huvec_PAK_072121_03_3D.mat')
-load('080621_3D_LD_Varied_Col_Comp_single_4mgmL_z_stack_3d.mat');
+load('test/lumen_huvec_PAK_072121_03.mat');
 
 %%
 timeBetweenFrames = 10 * 60; %Seconds
 
 %Initialize matrices for calculations
-instSpeed = cell(1, LAP.NumTracks); %Instantaneous speed
-directionality = zeros(LAP.NumTracks, 3);
-displacementVec = zeros(LAP.NumTracks, 3);
+instSpeed = cell(1, trackData.NumTracks); %Instantaneous speed
+directionality = zeros(trackData.NumTracks, 3);
+displacementVec = zeros(trackData.NumTracks, 3);
 
-for iTrack = 1:LAP.NumTracks
+for iTrack = 1:trackData.NumTracks
     
     %Get current track
-    currTrack = getTrack(LAP, iTrack);
+    currTrack = getTrack(trackData, iTrack);
     
     %Compute instantaneous speed
     instSpeed{iTrack} = sum((diff(currTrack.Centroid, 1)).^2, 2);
